@@ -25,11 +25,16 @@ func NewChatService(parser domain.ChatParser, transcriber domain.Transcriber, re
 	}
 }
 
-// Process runs the full pipeline: parse → transcribe → filter → render.
+// Process runs the full pipeline: parse → filter → transcribe → render.
 func (s *ChatService) Process(ctx context.Context, exportPath string, from, to *time.Time, w io.Writer) error {
 	chat, err := s.parser.Parse(exportPath)
 	if err != nil {
 		return fmt.Errorf("parsing export: %w", err)
+	}
+
+	// Apply time filter before transcription to avoid unnecessary API calls
+	if from != nil || to != nil {
+		chat = chat.Filter(from, to)
 	}
 
 	// Transcribe voice messages
@@ -44,11 +49,6 @@ func (s *ChatService) Process(ctx context.Context, exportPath string, from, to *
 			continue
 		}
 		chat.Messages[i].Content = text
-	}
-
-	// Apply time filter
-	if from != nil || to != nil {
-		chat = chat.Filter(from, to)
 	}
 
 	return s.renderer.Render(w, chat)

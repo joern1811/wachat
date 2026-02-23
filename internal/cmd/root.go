@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,6 +16,7 @@ import (
 	"github.com/joern1811/wachat/internal/adapter/renderer"
 	"github.com/joern1811/wachat/internal/adapter/transcriber"
 	"github.com/joern1811/wachat/internal/app"
+	"github.com/joern1811/wachat/internal/domain"
 )
 
 var (
@@ -22,6 +24,7 @@ var (
 	toStr   string
 	output  string
 	format  string
+	dryRun  bool
 )
 
 var rootCmd = &cobra.Command{
@@ -47,6 +50,7 @@ func init() {
 	rootCmd.Flags().StringVar(&toStr, "to", "", `End time filter (format: "DD.MM.YYYY" or "DD.MM.YYYY HH:MM")`)
 	rootCmd.Flags().StringVarP(&output, "output", "o", "", "Output file (default: stdout)")
 	rootCmd.Flags().StringVarP(&format, "format", "f", "text", `Output format: "text" or "markdown"`)
+	rootCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show what API calls would be made without executing them")
 }
 
 func configDir() string {
@@ -106,7 +110,14 @@ func runRoot(cmd *cobra.Command, args []string) error {
 	}
 
 	p := &parser.WhatsAppParser{}
-	t := transcriber.NewOpenAITranscriber()
+
+	var t domain.Transcriber
+	if dryRun {
+		t = &dryRunTranscriber{w: os.Stderr}
+	} else {
+		t = transcriber.NewOpenAITranscriber()
+	}
+
 	r := &renderer.TextRenderer{Markdown: format == "markdown"}
 
 	svc := app.NewChatService(p, t, r)
@@ -149,4 +160,14 @@ func parseTime(s string) (*time.Time, error) {
 	}
 
 	return nil, fmt.Errorf("unknown time format: %q (expected DD.MM.YYYY or DD.MM.YYYY HH:MM)", s)
+}
+
+// dryRunTranscriber logs which files would be sent to the Whisper API.
+type dryRunTranscriber struct {
+	w io.Writer
+}
+
+func (d *dryRunTranscriber) Transcribe(_ context.Context, audioPath string) (string, error) {
+	fmt.Fprintf(d.w, "[dry-run] Would transcribe: %s (POST /v1/audio/transcriptions, model=whisper-1)\n", audioPath)
+	return "[dry-run: transcription skipped]", nil
 }
