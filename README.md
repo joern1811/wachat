@@ -18,7 +18,15 @@ go install github.com/joern1811/wachat/cmd@latest
 
 ## Configuration
 
-wachat reads the OpenAI API key (required for voice message transcription) from:
+The quickest way to set up wachat is:
+
+```bash
+wachat init
+```
+
+This interactively prompts for your OpenAI API key, validates it, and writes the config file.
+
+Alternatively, wachat reads the API key (required for voice message transcription) from:
 
 1. Environment variable `OPENAI_API_KEY`
 2. Config file `~/.config/wachat/config.json`:
@@ -43,6 +51,9 @@ wachat --from 01.01.2024 --to 31.12.2024 export.zip
 # Output as markdown to a file
 wachat -f markdown -o chat.md export.zip
 
+# Preview which API calls would be made
+wachat --dry-run export.zip
+
 # Show version
 wachat version
 ```
@@ -55,6 +66,7 @@ wachat version
 | `--to` | | End time filter (`DD.MM.YYYY` or `DD.MM.YYYY HH:MM`) |
 | `--output` | `-o` | Output file (default: stdout) |
 | `--format` | `-f` | Output format: `text` or `markdown` (default: `text`) |
+| `--dry-run` | | Show what API calls would be made without executing them |
 
 ## License
 
