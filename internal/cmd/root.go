@@ -49,7 +49,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&format, "format", "f", "text", `Output format: "text" or "markdown"`)
 }
 
-func initConfig() {
+func configDir() string {
 	configHome := os.Getenv("XDG_CONFIG_HOME")
 	if configHome == "" {
 		home, err := os.UserHomeDir()
@@ -57,14 +57,18 @@ func initConfig() {
 		configHome = filepath.Join(home, ".config")
 	}
 
-	configDir := filepath.Clean(filepath.Join(configHome, app.ApplicationName))
+	return filepath.Clean(filepath.Join(configHome, app.ApplicationName))
+}
 
-	if _, err := os.Stat(configDir); os.IsNotExist(err) { //nolint:gosec // path is constructed from XDG_CONFIG_HOME or user home dir
-		err = os.MkdirAll(configDir, 0750) //nolint:gosec // see above
+func initConfig() {
+	dir := configDir()
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) { //nolint:gosec // path is constructed from XDG_CONFIG_HOME or user home dir
+		err = os.MkdirAll(dir, 0750) //nolint:gosec // see above
 		cobra.CheckErr(err)
 	}
 
-	viper.AddConfigPath(configDir)
+	viper.AddConfigPath(dir)
 	viper.SetConfigType("json")
 	viper.SetConfigName("config")
 
