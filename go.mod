@@ -3,7 +3,7 @@ module github.com/joern1811/wachat
 go 1.25.0
 
 require (
-	github.com/openai/openai-go/v3 v3.22.0
+	github.com/openai/openai-go/v3 v3.22.1
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 )
