@@ -1,4 +1,4 @@
-.PHONY: setup check build help
+.PHONY: setup check build release help
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
@@ -23,3 +23,17 @@ check: ## Run all quality checks (lint + test)
 
 build: ## Build the wachat binary
 	go build -o wachat ./cmd/
+
+release: ## Tag and push a release (bump=patch|minor|major, default: patch)
+	@latest=$$(git tag --sort=-v:refname | head -1 | sed 's/^v//'); \
+	if [ -z "$$latest" ]; then latest="0.0.0"; fi; \
+	IFS=. read -r major minor patch <<< "$$latest"; \
+	case "$(bump)" in \
+		major) major=$$((major + 1)); minor=0; patch=0 ;; \
+		minor) minor=$$((minor + 1)); patch=0 ;; \
+		*) patch=$$((patch + 1)) ;; \
+	esac; \
+	next="v$$major.$$minor.$$patch"; \
+	echo "$$latest -> $$next"; \
+	git tag -a "$$next" -m "Release $$next" && \
+	git push origin "$$next"
