@@ -1,0 +1,35 @@
+# Binaries
+/wachat
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Build & release
+dist/
+completions/
+
+# Dependencies
+go.work
+go.work.sum
+
+# Environment & data
+.env
+data/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# AI
+/.claude
+/.codex
+/.gemini

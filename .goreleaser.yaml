@@ -1,0 +1,66 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    - ./scripts/completions.sh
+
+builds:
+  - main: ./cmd/
+    binary: wachat
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    ldflags:
+      - -w -s
+        -X github.com/joern1811/wachat/internal/version.Version={{ .Version }}
+        -X github.com/joern1811/wachat/internal/version.GitCommit={{ .FullCommit }}
+        -X github.com/joern1811/wachat/internal/version.BuildDate={{ .Date }}
+
+archives:
+  - name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+    files:
+      - completions/*
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+brews:
+  - name: wachat
+    repository:
+      owner: joern1811
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    commit_author:
+      name: joern1811
+      email: joern.dombrowski@gmail.com
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+    directory: Formula
+    homepage: "https://github.com/joern1811/wachat"
+    description: "Convert WhatsApp chat exports to readable text with voice message transcription."
+    license: "MIT"
+    install: |-
+      bin.install "wachat"
+      bash_completion.install "completions/wachat.bash" => "wachat"
+      zsh_completion.install "completions/wachat.zsh" => "_wachat"
+      fish_completion.install "completions/wachat.fish"
+
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json

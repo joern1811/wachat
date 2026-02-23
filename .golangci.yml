@@ -1,0 +1,35 @@
+version: "2"
+
+run:
+  timeout: 5m
+  go: "1.25"
+
+linters:
+  default: none
+  enable:
+    - gosec
+    - errorlint
+    - noctx
+    - bodyclose
+    - gocritic
+    - misspell
+  settings:
+    gosec:
+      excludes:
+        - G304
+    errorlint:
+      errorf: true
+      asserts: true
+      comparison: true
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - performance
+  exclusions:
+    generated: lax
+    presets:
+      - common-false-positives
+    rules:
+      - path: '_test\.go'
+        linters:
+          - gosec
