@@ -57,10 +57,10 @@ func initConfig() {
 		configHome = filepath.Join(home, ".config")
 	}
 
-	configDir := filepath.Join(configHome, app.ApplicationName)
+	configDir := filepath.Clean(filepath.Join(configHome, app.ApplicationName))
 
-	if _, err := os.Stat(configDir); os.IsNotExist(err) {
-		err = os.MkdirAll(configDir, 0750)
+	if _, err := os.Stat(configDir); os.IsNotExist(err) { //nolint:gosec // path is constructed from XDG_CONFIG_HOME or user home dir
+		err = os.MkdirAll(configDir, 0750) //nolint:gosec // see above
 		cobra.CheckErr(err)
 	}
 
