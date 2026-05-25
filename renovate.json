@@ -1,20 +1,33 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
-  "schedule": [
-    "before 6am on monday"
-  ],
+  "extends": ["config:recommended"],
+  "labels": ["dependencies"],
+  "prHourlyLimit": 3,
+  "prConcurrentLimit": 5,
   "timezone": "Europe/Berlin",
   "packageRules": [
     {
+      "description": "Go minor/patch: group into one PR and automerge",
       "matchManagers": ["gomod"],
-      "groupName": "go modules"
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "groupName": "go-deps",
+      "groupSlug": "go-deps",
+      "automerge": true,
+      "schedule": ["on monday"]
     },
     {
+      "description": "GitHub Actions: group all updates into one PR and automerge",
       "matchManagers": ["github-actions"],
-      "groupName": "github actions"
+      "groupName": "github-actions",
+      "groupSlug": "github-actions",
+      "automerge": true,
+      "schedule": ["on monday"]
+    },
+    {
+      "description": "Go major updates need manual review",
+      "matchManagers": ["gomod"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false
     }
   ]
 }
